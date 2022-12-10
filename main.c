@@ -12,13 +12,22 @@ struct constraint{
     float c;
 };
 struct target_Function Introduction();
-void Get_All_Constraint();
+void Get_All_Constraint(int total_const,struct constraint *model_const);
+int Get_All_Constraint_Begin();
 void Print_Constraints(int arr_lenght,struct constraint data[]);
 int main()
 {
     struct target_Function z;
+    int const_arr_lenght;
+
     z = Introduction();
-    Get_All_Constraint();
+
+    const_arr_lenght = Get_All_Constraint_Begin();
+    struct constraint model_constraints[const_arr_lenght];
+    Get_All_Constraint(const_arr_lenght,model_constraints);
+
+    Print_Constraints(const_arr_lenght,model_constraints);
+
     return 0;
 }
 struct target_Function Introduction(){
@@ -32,22 +41,12 @@ struct target_Function Introduction(){
 
     return z;
 }
-void Get_All_Constraint(){
-    int total_const;
+void Get_All_Constraint(int total_const,struct constraint *model_const){
     int i;
-    while(1 > 0){
-        printf("Modelin toplam kisit sayisini giriniz_");
-        scanf("%d", &total_const);
-        if(total_const <= 0){
-            printf("Modelin kisit sayisi sifir veya sifirdan kucuk olamaz!\n");
-            continue;
-        }
-        break;
-    }
 
     printf("\nModelin kisitlari ax + by <= c veya ax + by >= c formatinda olmalidir.\n");
     printf("===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====");
-    struct constraint model_const[total_const];
+
     int state;
     for( i = 0; i < total_const; i++){
         printf("\n\nKisit-%d olusturunuz\n",i);
@@ -65,8 +64,6 @@ void Get_All_Constraint(){
         printf("c degerini giriniz_");
         scanf("%f", &model_const[i].c);
     }
-
-    Print_Constraints(total_const,model_const);
 }
 void Print_Constraints(int arr_lenght,struct constraint data[]){
     int i;
@@ -82,4 +79,18 @@ void Print_Constraints(int arr_lenght,struct constraint data[]){
         printf("= %.2f\n",data[i].c);
     }
     printf("x,y >= 0");
+}
+int Get_All_Constraint_Begin(){
+    int total_const;
+    int i;
+    while(1 > 0){
+        printf("Modelin toplam kisit sayisini giriniz_");
+        scanf("%d", &total_const);
+        if(total_const <= 0){
+            printf("Modelin kisit sayisi sifir veya sifirdan kucuk olamaz!\n");
+            continue;
+        }
+        break;
+    }
+    return total_const;
 }
