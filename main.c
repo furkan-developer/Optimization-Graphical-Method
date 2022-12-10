@@ -11,10 +11,16 @@ struct constraint{
     int state;
     float c;
 };
+struct corner_point{
+    float x_axis;
+    float y_axis;
+};
 struct target_Function Introduction();
 void Get_All_Constraint(int total_const,struct constraint *model_const);
 int Get_All_Constraint_Begin();
 void Print_Constraints(int arr_lenght,struct constraint data[]);
+void calculate_corner_points_to_constraints(struct constraint datas[],int datas_lenght,struct corner_point *corner_points);
+void Print_Corner_Points(int arr_lenght,struct corner_point data[]);
 int main()
 {
     struct target_Function z;
@@ -26,7 +32,12 @@ int main()
     struct constraint model_constraints[const_arr_lenght];
     Get_All_Constraint(const_arr_lenght,model_constraints);
 
-    Print_Constraints(const_arr_lenght,model_constraints);
+    //Print_Constraints(const_arr_lenght,model_constraints);
+
+    struct corner_point corner_points[const_arr_lenght*2];
+    calculate_corner_points_to_constraints(model_constraints,const_arr_lenght,corner_points);
+
+    //Print_Corner_Points(const_arr_lenght*2,corner_points);
 
     return 0;
 }
@@ -93,4 +104,24 @@ int Get_All_Constraint_Begin(){
         break;
     }
     return total_const;
+}
+void calculate_corner_points_to_constraints(struct constraint datas[],int datas_lenght,struct corner_point *corner_points){
+    int i;
+    int j = 0;
+    for(i = 0; i < datas_lenght; i++){
+        corner_points[j].x_axis = datas[i].c / datas[i].x_K;
+        corner_points[j].y_axis = 0;
+        ++j;
+        corner_points[j].x_axis = 0;
+        corner_points[j].y_axis = datas[i].c / datas[i].y_K;
+        ++j;
+    }
+}
+void Print_Corner_Points(int arr_lenght,struct corner_point data[]){
+    int i;
+
+    printf("\n===== ===== ===== ===== =====   Kose Noktalar   ===== ===== ===== ===== =====\n");
+    for(i = 0; i < arr_lenght; i++){
+        printf("(%.2f,%.2f)\n",data[i].x_axis,data[i].y_axis);
+    }
 }
