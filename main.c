@@ -16,6 +16,10 @@ struct corner_point{
     double x_axis;
     double y_axis;
 };
+struct Corner_Points_Value_On_Target_Function{
+    struct corner_point corner_point;
+    double Point_Value;
+};
 struct target_Function Introduction();
 void Get_All_Constraint(int total_const,struct constraint *model_const);
 int Get_All_Constraint_Begin();
@@ -26,6 +30,9 @@ double Calculate_Delta(double a,double b,double c,double d);
 void Calculate_Intersection_Points(struct constraint datas[],int datas_lenght,struct corner_point *inter_section_points,int end_point_index);
 void Calculate_Corner_Points_To_Constraints(struct constraint datas[],int datas_lenght,struct corner_point *corner_points);
 void Print_Corner_Points(int arr_lenght,struct corner_point data[]);
+double Calculate_Target_Function_Value(double x_axis,double y_axis,struct target_Function z);
+void Check_Corner_Points_On_Feasible_Solution_Area(struct corner_point *datas,int datas_lenght,struct constraint *constraints,int constraints_lenght,struct Corner_Points_Value_On_Target_Function *values,struct target_Function z);
+void Print_Values(struct Corner_Points_Value_On_Target_Function *array, int size);
 int main()
 {
     struct target_Function z;
@@ -46,6 +53,13 @@ int main()
     Calculate_Corner_Points_To_Constraints(model_constraints,const_arr_lenght,corner_points);
 
     Print_Corner_Points((const_arr_lenght*2)+ncr,corner_points);
+
+    struct Corner_Points_Value_On_Target_Function values[(const_arr_lenght*2)+ncr];
+
+    Check_Corner_Points_On_Feasible_Solution_Area(corner_points,(const_arr_lenght*2)+ncr,model_constraints,const_arr_lenght,values,z);
+
+    Print_Values(values,(const_arr_lenght*2)+ncr);
+
     /*
     double result = Calculate_Delta(1,1,10,6);
     printf("\SONUC = %.2lf",result);
@@ -202,12 +216,69 @@ bool Is_Intersection(double a1,double a2,double b1, double b2){
     }
     return true;
 }
-int fact(int n)
-{
+int fact(int n){
     int i,f=1;
     for(i=1;i<=n;i++)
     {
         f=f*i;
     }
     return f;
+}
+void Check_Corner_Points_On_Feasible_Solution_Area(struct corner_point *datas,int datas_lenght,struct constraint *constraints,int constraints_lenght,struct Corner_Points_Value_On_Target_Function *values,struct target_Function z){
+    int i,j,k=0;
+    double result;
+    bool flag = true;
+    for(i = 0; i < datas_lenght; i++){
+        if((datas[i].x_axis < 0) || (datas[i].y_axis < 0)){
+            values[k].corner_point.x_axis = datas[i].x_axis;
+            values[k].corner_point.y_axis = datas[i].y_axis;
+            values[k].Point_Value = -1;
+            k++;
+            printf("Buraya girmemesi gerekiyordu");
+            continue;
+        }
+        for(j = 0; j < constraints_lenght; j++){
+            result = (constraints[j].x_K * datas[i].x_axis) + (constraints[j].y_K * datas[i].y_axis);
+            printf("Nokta %d Kisit %d result = %.2lf\n",i+1,j+1,result);
+            if(constraints[j].state == 0){
+                if(result <= constraints[j].c){
+                // mümkün çözüm noktasında
+                    continue;
+                }
+                flag = false;
+                break;
+            }
+            else{
+                if(result >= constraints[j].c){
+                // mümkün çözüm noktasında
+                    flag = true;
+                    continue;
+                }
+                flag = false;
+                break;
+            }
+        }
+        if(flag == true){
+            values[k].corner_point.x_axis = datas[i].x_axis;
+            values[k].corner_point.y_axis = datas[i].y_axis;
+            values[k].Point_Value = Calculate_Target_Function_Value(datas[i].x_axis,datas[i].y_axis,z);
+            k++;
+        }
+        else{
+            values[k].corner_point.x_axis = datas[i].x_axis;
+            values[k].corner_point.y_axis = datas[i].y_axis;
+            values[k].Point_Value = -1;
+            k++;
+        }
+        flag = true;
+    }
+}
+void Print_Values(struct Corner_Points_Value_On_Target_Function *array, int size) {
+  for (int i = 0; i < size; ++i) {
+    printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",array[i].corner_point.x_axis,array[i].corner_point.y_axis,array[i].Point_Value);
+  }
+  printf("\n");
+}
+double Calculate_Target_Function_Value(double x_axis,double y_axis,struct target_Function z){
+    return (x_axis * z.x_K) + (y_axis * z.y_K);
 }
