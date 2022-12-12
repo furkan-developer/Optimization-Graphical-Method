@@ -60,6 +60,7 @@ int main()
 
     Print_Values(values,(const_arr_lenght*2)+ncr);
 
+
     /*
     double result = Calculate_Delta(1,1,10,6);
     printf("\SONUC = %.2lf",result);
@@ -134,11 +135,19 @@ void Calculate_Corner_Points_To_Constraints(struct constraint datas[],int datas_
     int i;
     int j = 0;
     for(i = 0; i < datas_lenght; i++){
-        corner_points[j].x_axis = datas[i].c / datas[i].x_K;
         corner_points[j].y_axis = 0;
+        if(datas[i].x_K != 0){
+            corner_points[j].x_axis = datas[i].c / datas[i].x_K;
+        }else{
+            corner_points[j].x_axis = 0;
+        }
         ++j;
         corner_points[j].x_axis = 0;
-        corner_points[j].y_axis = datas[i].c / datas[i].y_K;
+        if(datas[i].y_K != 0){
+            corner_points[j].y_axis = datas[i].c / datas[i].y_K;
+        }else{
+            corner_points[j].y_axis = 0;
+        }
         ++j;
     }
 
