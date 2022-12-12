@@ -33,6 +33,10 @@ void Print_Corner_Points(int arr_lenght,struct corner_point data[]);
 double Calculate_Target_Function_Value(double x_axis,double y_axis,struct target_Function z);
 void Check_Corner_Points_On_Feasible_Solution_Area(struct corner_point *datas,int datas_lenght,struct constraint *constraints,int constraints_lenght,struct Corner_Points_Value_On_Target_Function *values,struct target_Function z);
 void Print_Values(struct Corner_Points_Value_On_Target_Function *array, int size);
+void swap(struct Corner_Points_Value_On_Target_Function *a, struct Corner_Points_Value_On_Target_Function *b);
+int partition(struct Corner_Points_Value_On_Target_Function array[], int low, int high);
+void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, int high);
+void Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function *values,int values_length);
 int main()
 {
     struct target_Function z;
@@ -60,7 +64,7 @@ int main()
 
     Print_Values(values,(const_arr_lenght*2)+ncr);
 
-
+    Find_Optimal_Point(values,(const_arr_lenght*2)+ncr);
     /*
     double result = Calculate_Delta(1,1,10,6);
     printf("\SONUC = %.2lf",result);
@@ -290,4 +294,53 @@ void Print_Values(struct Corner_Points_Value_On_Target_Function *array, int size
 }
 double Calculate_Target_Function_Value(double x_axis,double y_axis,struct target_Function z){
     return (x_axis * z.x_K) + (y_axis * z.y_K);
+}
+void Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function values[],int values_length){
+    int i;
+    printf("FIND OPTIMAL POINTE GELEN DIZI");
+    for(i = 0; i < values_length; i++){
+        printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",values[i].corner_point.x_axis,values[i].corner_point.y_axis,values[i].Point_Value);
+    }
+    quickSort(values, 0, values_length- 1);
+}
+void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, int high){
+    int i;
+    printf("QUICK SORTA GELEN DIZI\n");
+    for(i = 0; i < 5; i++){
+        printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",array[i].corner_point.x_axis,array[i].corner_point.y_axis,array[i].Point_Value);
+    }
+
+    if (low < high) {
+        int pi = partition(array, low, high);
+
+        quickSort(array, low, pi - 1);
+
+        quickSort(array, pi + 1, high);
+    }
+}
+int partition(struct Corner_Points_Value_On_Target_Function array[], int low, int high) {
+
+  double pivot = array[high].Point_Value;
+  printf("PIVOT DEGERI : %.2lf\n",pivot);
+  int i = (low - 1);
+  for (int j = low; j < high; j++) {
+    printf("array[j].Point_Value DEGERI : %.2lf\n",array[j].Point_Value);
+    if (array[j].Point_Value <= pivot) {
+        printf("array[j].Point_Value <= pivot\n");
+        printf("degisime gidiliyor\n");
+        i++;
+        printf("Degisime gidilen degerler %.2lf - %.2lf\n",array[i].Point_Value,array[j].Point_Value);
+        swap(&array[i], &array[j]);
+    }
+  }
+  swap(&array[i + 1], &array[high]);
+
+  return (i + 1);
+}
+void swap(struct Corner_Points_Value_On_Target_Function *a, struct Corner_Points_Value_On_Target_Function *b) {
+    printf("degisime gelindi\n");
+    struct Corner_Points_Value_On_Target_Function t = *a;
+    printf("t nin degeri : %d\n",t);
+    *a = *b;
+    *b = t;
 }
