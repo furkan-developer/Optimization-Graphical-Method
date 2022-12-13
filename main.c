@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <time.h>
 struct target_Function{
    int x_K;
    int y_K;
@@ -38,8 +38,11 @@ void swap(struct Corner_Points_Value_On_Target_Function *a, struct Corner_Points
 int partition(struct Corner_Points_Value_On_Target_Function array[], int low, int high);
 void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, int high);
 struct Corner_Points_Value_On_Target_Function Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function *values,int values_length,struct target_Function z);
+void Print_Model(struct target_Function z,struct constraint model_constraints[],int const_arr_length);
 int main()
 {
+    time_t start,end;
+    double execution_time;
     struct target_Function z;
     int const_arr_lenght;
 
@@ -49,31 +52,34 @@ int main()
     struct constraint model_constraints[const_arr_lenght];
     Get_All_Constraint(const_arr_lenght,model_constraints);
 
-    Print_Constraints(const_arr_lenght,model_constraints);
+    //Print_Constraints(const_arr_lenght,model_constraints);
 
+    Print_Model(z,model_constraints,const_arr_lenght);
     int ncr = fact(const_arr_lenght) / (fact(2)*fact(const_arr_lenght-2));
-    printf("TOPLAM KISIT FONKSIYON KARSILASTIRMASI %d\n",ncr);
 
     struct corner_point corner_points[(const_arr_lenght*2)+ncr];
-    Calculate_Corner_Points_To_Constraints(model_constraints,const_arr_lenght,corner_points);
 
-    Print_Corner_Points((const_arr_lenght*2)+ncr,corner_points);
+    start = clock();
+
+    Calculate_Corner_Points_To_Constraints(model_constraints,const_arr_lenght,corner_points);
 
     struct Corner_Points_Value_On_Target_Function values[(const_arr_lenght*2)+ncr];
 
     Check_Corner_Points_On_Feasible_Solution_Area(corner_points,(const_arr_lenght*2)+ncr,model_constraints,const_arr_lenght,values,z);
 
-    Print_Values(values,(const_arr_lenght*2)+ncr);
-
     struct Corner_Points_Value_On_Target_Function optimal_point = Find_Optimal_Point(values,(const_arr_lenght*2)+ncr,z);
 
+    end = clock();
+    execution_time = ((double)(end - start))/CLOCKS_PER_SEC;
+
     if(optimal_point.Point_Value == -1){
-        printf("Girilen model cözumsuzdur.");
+        printf("\nGirilen model cozumsuzdur.");
     }
     else{
-        printf("OPTIMAL NOKTA : (%.2lf,%.2lf) DEGER : %.2lf",optimal_point.corner_point.x_axis,optimal_point.corner_point.y_axis,optimal_point.Point_Value);
+        printf("\nOPTIMAL NOKTA : (%.2lf,%.2lf) DEGER : %.2lf",optimal_point.corner_point.x_axis,optimal_point.corner_point.y_axis,optimal_point.Point_Value);
     }
 
+    printf("\n\nAlgoritmanin calisma suresi : %lf ms",execution_time);
     return 0;
 }
 struct target_Function Introduction(){
@@ -179,36 +185,23 @@ void Calculate_Intersection_Points(struct constraint datas[],int datas_lenght,st
     double delta_y;
     bool result;
 
-    Print_Constraints(datas_lenght,datas);
-
     for(i = 0; i < datas_lenght-1; i++){
         for(j = i+1; j < datas_lenght; j++){
-            // kesişim noktası varmı kontrol et
             result = Is_Intersection(datas[i].x_K,datas[j].x_K,datas[i].y_K,datas[j].y_K);
             if(result == true){
-                printf("KESISIM NOKTASI VAR\n");
-                printf("Delta hesap parametreleri : \n");
+
                 delta = Calculate_Delta(datas[i].x_K,datas[i].y_K,datas[j].x_K,datas[j].y_K);
-                printf("delta hesaptan gelen delta değeri : %.2lf\n",delta);
 
-                printf("Delta_x hesap parametreleri : \n");
                 delta_x = Calculate_Delta(datas[i].c,datas[i].y_K,datas[j].c,datas[j].y_K);
-                printf("delta hesaptan gelen delta-x değeri : %.2lf\n",delta_x);
 
-                printf("Delta_y hesap parametreleri : \n");
                 delta_y = Calculate_Delta(datas[i].x_K,datas[i].c,datas[j].x_K,datas[j].c);
-                printf("delta hesaptan gelen delta_y değeri : %.2lf\n",delta_y);
-
-                printf("delta = %.2lf   delta x = %.2lf delta y = %.2f\n",delta,delta_x,delta_y);
 
                 inter_section_points[k].x_axis = delta_x / delta;
                 inter_section_points[k].y_axis = delta_y / delta;
 
-                printf("\nnoktanın yazılan index değeri : %d \nx,y %.2lf,%.2lf",k,inter_section_points[k].x_axis,inter_section_points[k].y_axis);
                 k++;
             }
             else{
-                printf("KESISIM NOKTASI YOK\n");
                 inter_section_points[k].x_axis = -1;
                 inter_section_points[k].y_axis = -1;
                 k++;
@@ -217,17 +210,9 @@ void Calculate_Intersection_Points(struct constraint datas[],int datas_lenght,st
     }
 }
 double Calculate_Delta(double a,double b,double c,double d){
-    printf("a = %lf\nb = %lf\nc = %lf\nd = %lf\n",a,b,c,d);
-    double resutl1 = (a*d);
-    printf("result1 = a*d = %.2lf\n",resutl1);
-    double result2 = (c*b);
-    printf("result2 = c*b = %.2lf\n",result2);
-    double result3 = resutl1 - result2;
-    printf("result3 = result1 - result2 : %.2lf",result3);
-    return result3;
+    return (a*d) - (c*b);
 }
 bool Is_Intersection(double a1,double a2,double b1, double b2){
-    printf("a1 = %.2lf a2 = %.2lf b1 = %.2lf b2 = %2.lf",a1,a2,b1,b2);
     double x_axis_ratio = a1/a2;
     double y_axis_ratio = b1/b2;
 
@@ -254,15 +239,13 @@ void Check_Corner_Points_On_Feasible_Solution_Area(struct corner_point *datas,in
             values[k].corner_point.y_axis = datas[i].y_axis;
             values[k].Point_Value = -1;
             k++;
-            printf("Buraya girmemesi gerekiyordu");
             continue;
         }
         for(j = 0; j < constraints_lenght; j++){
             result = (constraints[j].x_K * datas[i].x_axis) + (constraints[j].y_K * datas[i].y_axis);
-            printf("Nokta %d Kisit %d result = %.2lf\n",i+1,j+1,result);
+
             if(constraints[j].state == 0){
                 if(result <= constraints[j].c){
-                // mümkün çözüm noktasında
                     continue;
                 }
                 flag = false;
@@ -304,15 +287,9 @@ double Calculate_Target_Function_Value(double x_axis,double y_axis,struct target
 }
 struct Corner_Points_Value_On_Target_Function Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function values[],int values_length,struct target_Function z){
     int i;
-    printf("FIND OPTIMAL POINTE GELEN DIZI\n");
-    for(i = 0; i < values_length; i++){
-        printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",values[i].corner_point.x_axis,values[i].corner_point.y_axis,values[i].Point_Value);
-    }
+
     quickSort(values, 0, values_length- 1);
-    printf("QUIC SORT TAN SONRAKİ HALI\n");
-    for(i = 0; i < values_length; i++){
-        printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",values[i].corner_point.x_axis,values[i].corner_point.y_axis,values[i].Point_Value);
-    }
+
     if(z.flag == 1){
         return values[values_length-1];
     }
@@ -329,10 +306,7 @@ struct Corner_Points_Value_On_Target_Function Find_Optimal_Point(struct Corner_P
 }
 void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, int high){
     int i;
-    printf("QUICK SORTA GELEN DIZI\n");
-    for(i = 0; i < 4; i++){
-        printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",array[i].corner_point.x_axis,array[i].corner_point.y_axis,array[i].Point_Value);
-    }
+
     if (low < high) {
         int pi = partition(array, low, high);
 
@@ -342,28 +316,44 @@ void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, i
     }
 }
 int partition(struct Corner_Points_Value_On_Target_Function array[], int low, int high) {
+    double pivot = array[high].Point_Value;
 
-  double pivot = array[high].Point_Value;
-  printf("PIVOT DEGERI : %.2lf\n",pivot);
-  int i = (low - 1);
-  for (int j = low; j < high; j++) {
-    printf("array[j].Point_Value DEGERI : %.2lf\n",array[j].Point_Value);
-    if (array[j].Point_Value <= pivot) {
-        printf("array[j].Point_Value <= pivot\n");
-        printf("degisime gidiliyor\n");
-        i++;
-        printf("Degisime gidilen degerler %.2lf - %.2lf\n",array[i].Point_Value,array[j].Point_Value);
-        swap(&array[i], &array[j]);
+    int i = (low - 1);
+    for (int j = low; j < high; j++) {
+        if (array[j].Point_Value <= pivot) {
+            i++;
+            swap(&array[i], &array[j]);
+        }
     }
-  }
-  swap(&array[i + 1], &array[high]);
+    swap(&array[i + 1], &array[high]);
 
-  return (i + 1);
+    return (i + 1);
 }
 void swap(struct Corner_Points_Value_On_Target_Function *a, struct Corner_Points_Value_On_Target_Function *b) {
-    printf("degisime gelindi\n");
     struct Corner_Points_Value_On_Target_Function t = *a;
-    printf("t nin degeri : %d\n",t);
     *a = *b;
     *b = t;
 }
+void Print_Model(struct target_Function z,struct constraint model_constraints[],int const_arr_length){
+    int i;
+
+    printf("\nOlusturulan Model\n");
+    if(z.flag == 1){
+        printf("\nMax. ");
+    }
+    else{
+        printf("\nMin. ");
+    }
+    printf("Z = %.2lfx + %.2lfy\n",z.x_K,z.y_K);
+    for(i = 0; i < const_arr_length; i++){
+        printf("Kisit-%d : %.2lfx + %.2lfy ",i+1,model_constraints[i].x_K,model_constraints[i].y_K);
+        if(model_constraints[i].state == 0){
+            printf("<");
+        }
+        else{
+            printf(">");
+        }
+        printf("= %.2lf\n",model_constraints[i].c);
+    }
+}
+
