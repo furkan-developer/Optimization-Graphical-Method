@@ -5,6 +5,7 @@
 struct target_Function{
    int x_K;
    int y_K;
+   int flag;
 };
 struct constraint{
     double x_K;
@@ -36,7 +37,7 @@ void Print_Values(struct Corner_Points_Value_On_Target_Function *array, int size
 void swap(struct Corner_Points_Value_On_Target_Function *a, struct Corner_Points_Value_On_Target_Function *b);
 int partition(struct Corner_Points_Value_On_Target_Function array[], int low, int high);
 void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, int high);
-void Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function *values,int values_length);
+struct Corner_Points_Value_On_Target_Function Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function *values,int values_length,struct target_Function z);
 int main()
 {
     struct target_Function z;
@@ -64,22 +65,28 @@ int main()
 
     Print_Values(values,(const_arr_lenght*2)+ncr);
 
-    Find_Optimal_Point(values,(const_arr_lenght*2)+ncr);
-    /*
-    double result = Calculate_Delta(1,1,10,6);
-    printf("\SONUC = %.2lf",result);
-    */
+    struct Corner_Points_Value_On_Target_Function optimal_point = Find_Optimal_Point(values,(const_arr_lenght*2)+ncr,z);
+
+    if(optimal_point.Point_Value == -1){
+        printf("Girilen model cözumsuzdur.");
+    }
+    else{
+        printf("OPTIMAL NOKTA : (%.2lf,%.2lf) DEGER : %.2lf",optimal_point.corner_point.x_axis,optimal_point.corner_point.y_axis,optimal_point.Point_Value);
+    }
+
     return 0;
 }
 struct target_Function Introduction(){
     struct target_Function z;
-    printf("Hedef fonksiyon ax+by formatinda olmalidir.\n");
+    printf("Hedef fonksiyon ax+by formatinda olmalidir.\n\n");
     printf("X in katsayisini giriniz_");
     scanf("%d", &z.x_K);
 
     printf("Y in katsayisini giriniz_");
     scanf("%d", &z.y_K);
 
+    printf("\nMin. problem icin 0\nMax. problem icin 1 giriniz_");
+    scanf("%d",&z.flag);
     return z;
 }
 void Get_All_Constraint(int total_const,struct constraint *model_const){
@@ -97,8 +104,8 @@ void Get_All_Constraint(int total_const,struct constraint *model_const){
         printf("y in katsayisini (b) giriniz_");
         scanf("%lf", &model_const[i].y_K);
 
-        printf("Kisit kucuk esittir ise : 0\n");
-        printf("Kisit buyuk esittir ise : 1\n");
+        printf("Kisit kucuk esittir icin 0\n");
+        printf("Kisit buyuk esittir icin 1 giriniz_");
         scanf("%d", &model_const[i].state);
         // burada 0-1 kontrolü yap
 
@@ -125,7 +132,7 @@ int Get_All_Constraint_Begin(){
     int total_const;
     int i;
     while(1 > 0){
-        printf("Modelin toplam kisit sayisini giriniz_");
+        printf("\nModelin toplam kisit sayisini giriniz_");
         scanf("%d", &total_const);
         if(total_const <= 0){
             printf("Modelin kisit sayisi sifir veya sifirdan kucuk olamaz!\n");
@@ -295,21 +302,37 @@ void Print_Values(struct Corner_Points_Value_On_Target_Function *array, int size
 double Calculate_Target_Function_Value(double x_axis,double y_axis,struct target_Function z){
     return (x_axis * z.x_K) + (y_axis * z.y_K);
 }
-void Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function values[],int values_length){
+struct Corner_Points_Value_On_Target_Function Find_Optimal_Point(struct Corner_Points_Value_On_Target_Function values[],int values_length,struct target_Function z){
     int i;
-    printf("FIND OPTIMAL POINTE GELEN DIZI");
+    printf("FIND OPTIMAL POINTE GELEN DIZI\n");
     for(i = 0; i < values_length; i++){
         printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",values[i].corner_point.x_axis,values[i].corner_point.y_axis,values[i].Point_Value);
     }
     quickSort(values, 0, values_length- 1);
+    printf("QUIC SORT TAN SONRAKİ HALI\n");
+    for(i = 0; i < values_length; i++){
+        printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",values[i].corner_point.x_axis,values[i].corner_point.y_axis,values[i].Point_Value);
+    }
+    if(z.flag == 1){
+        return values[values_length-1];
+    }
+    else{
+        int i = 0;
+        while(i < values_length){
+           if(values[i].Point_Value != -1){
+                return values[i];
+           }
+           i++;
+        }
+        return values[values_length-1];
+    }
 }
 void quickSort(struct Corner_Points_Value_On_Target_Function array[], int low, int high){
     int i;
     printf("QUICK SORTA GELEN DIZI\n");
-    for(i = 0; i < 5; i++){
+    for(i = 0; i < 4; i++){
         printf("Kose Nokta : (%.2lf,%.2lf) |=|=|=| Amac foksiyondaki degeri : %.2lf\n",array[i].corner_point.x_axis,array[i].corner_point.y_axis,array[i].Point_Value);
     }
-
     if (low < high) {
         int pi = partition(array, low, high);
 
